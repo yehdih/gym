@@ -1,0 +1,192 @@
+{% extends 'gym/base.html' %}
+
+{% block title %}Paid This Month - Gym Management{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">  {# Added border and shadow for depth #}
+            <div class="card-header bg-success text-white rounded-top">
+                <div class="d-flex flex-column flex-md-row align-items-center justify-content-between">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calendar-check me-2"></i>Paid This Month - {{ current_month }}
+                    </h4>
+                    {# Mobile-only summary badge #}
+                    <div class="d-md-none mt-2">
+                        <span class="badge bg-light text-dark fs-6 p-2">
+                            <i class="fas fa-dollar-sign me-1"></i>{{ total_revenue|default:"0" }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body p-0">  {# Remove padding to let cards fill width #}
+                {% if payments %}
+                    {# Desktop Table (hidden on mobile) #}
+                    <div class="d-none d-md-block p-4">
+                        <div class="alert alert-success d-flex align-items-center">
+                            <i class="fas fa-check-circle fa-lg me-3"></i>
+                            <div>
+                                <strong>{{ payments.count }}</strong> payment(s) received this month
+                                <div class="mt-1">
+                                    <strong>Total Revenue:</strong> $<span class="h5 mb-0">{{ total_revenue|default:"0" }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped align-middle">  {# Added striped for better readability #}
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th scope="col">Member Name</th>
+                                        <th scope="col">Phone</th>
+                                        <th scope="col">Amount Paid</th>
+                                        <th scope="col">Payment Date</th>
+                                        <th scope="col">Valid Until</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment in payments %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ payment.member.full_name }}</strong>
+                                            </td>
+                                            <td>{{ payment.member.phone_number }}</td>
+                                            <td><strong>${{ payment.amount }}</strong></td>
+                                            <td>{{ payment.payment_date|date:"M d, Y" }}</td>
+                                            <td>{{ payment.validity_end|date:"M d, Y" }}</td>
+                                            <td>
+                                                {% if payment.member.is_expired %}
+                                                    <span class="badge bg-danger rounded-pill">Expired</span>
+                                                {% else %}
+                                                    <span class="badge bg-success rounded-pill">
+                                                        Active ({{ payment.member.days_remaining }} days)
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'member_profile' payment.member.pk %}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye me-1"></i>View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {# Mobile Card Layout (shown only on mobile) #}
+                    <div class="d-block d-md-none">
+                        <div class="p-3 border-bottom bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <strong>{{ payments.count }}</strong> payments
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="list-group list-group-flush">
+                            {% for payment in payments %}
+                                <div class="list-group-item p-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="mb-1 fw-bold">{{ payment.member.full_name }}</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-phone me-1"></i>{{ payment.member.phone_number }}
+                                            </small>
+                                        </div>
+                                        <span class="badge {% if payment.member.is_expired %}bg-danger{% else %}bg-success{% endif %} rounded-pill">
+                                            ${{ payment.amount }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Payment Date</small>
+                                            <strong>{{ payment.payment_date|date:"M d" }}</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Valid Until</small>
+                                            <strong>{{ payment.validity_end|date:"M d, Y" }}</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            {% if payment.member.is_expired %}
+                                                <span class="badge bg-danger">Expired</span>
+                                            {% else %}
+                                                <span class="badge bg-success">
+                                                    {{ payment.member.days_remaining }} days left
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <a href="{% url 'member_profile' payment.member.pk %}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            Profile <i class="fas fa-chevron-right ms-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    {# Revenue Summary #}
+                    <div class="border-top p-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-chart-line fa-2x text-success me-3"></i>
+                                    <div>
+                                        <h5 class="mb-1">Monthly Revenue Summary</h5>
+                                        <p class="text-muted mb-0">Total payments processed in {{ current_month }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                <div class="display-6 fw-bold text-success">${{ total_revenue|default:"0" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                {% else %}
+                    {# No Payments State #}
+                    <div class="text-center py-5">
+                        <div class="py-5">
+                            <i class="fas fa-calendar-times fa-4x text-muted mb-4"></i>
+                            <h4 class="text-muted mb-3">No Payments This Month</h4>
+                            <p class="text-muted mb-4">No payments have been received for {{ current_month }} yet.</p>
+                            <a href="#" class="btn btn-success">
+                                <i class="fas fa-plus me-2"></i>Record New Payment
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    {# Optional custom styles for better mobile appearance #}
+    @media (max-width: 768px) {
+        .list-group-item {
+            border-left: none;
+            border-right: none;
+        }
+        .card-header {
+            padding: 1rem;
+        }
+    }
+    
+    {# Hover effects for better interactivity #}
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}

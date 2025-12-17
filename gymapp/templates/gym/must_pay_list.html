@@ -1,0 +1,90 @@
+{% extends 'gym/base.html' %}
+
+{% block title %}Must Pay List - Gym Management{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-exclamation-triangle"></i> Members Who Must Pay
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="get" class="mb-4">
+                    <div class="input-group">
+                        <input type="text" 
+                               name="search" 
+                               class="form-control" 
+                               placeholder="Search by name or phone number..."
+                               value="{{ search_query }}">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        {% if search_query %}
+                            <a href="{% url 'must_pay_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Clear
+                            </a>
+                        {% endif %}
+                    </div>
+                </form>
+
+                {% if members %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        <strong>{{ members.count }}</strong> member(s) with expired payments
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Monthly Fee</th>
+                                    <th>Validity Ended</th>
+                                    <th>Days Overdue</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in members %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ member.full_name }}</strong>
+                                        </td>
+                                        <td>{{ member.phone_number }}</td>
+                                        <td>${{ member.monthly_fee }}</td>
+                                        <td>{{ member.validity_end_date|date:"M d, Y" }}</td>
+                                        <td>
+                                            <span class="badge badge-expired">
+                                                {% widthratio member.validity_end_date|timesince:"days" 1 1 %} days
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'member_profile' member.pk %}" 
+                                               class="btn btn-sm btn-primary">
+                                                <i class="fas fa-credit-card"></i> Add Payment
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> 
+                        {% if search_query %}
+                            No members found matching "{{ search_query }}"
+                        {% else %}
+                            Great! No members with expired payments.
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

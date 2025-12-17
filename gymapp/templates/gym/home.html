@@ -1,0 +1,173 @@
+{% extends 'gym/base.html' %}
+
+{% block title %}Dashboard - Gym Management{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <!-- <div class="d-flex justify-content-between align-items-center mb-5">
+        <h1 style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 700; font-size: 2.5rem; color: #1c1c1e;">
+            <i class="fas fa-dumbbell" style="color: #007aff;"></i> Gym Dashboard
+        </h1>
+    </div> -->
+
+    <!-- Stats Cards in a carousel style -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card apple-card-glass">
+                <div class="card-body text-center">
+                    <h6>Total Members</h6>
+                    <h2>{{ total_members }}</h2>
+                    <i class="fas fa-users" style="color: #007aff; font-size: 1.5rem;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card apple-card-glass">
+                <div class="card-body text-center">
+                    <h6>Active Members</h6>
+                    <h2>{{ active_members }}</h2>
+                    <i class="fas fa-user-check" style="color: #34c759; font-size: 1.5rem;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card apple-card-glass">
+                <div class="card-body text-center">
+                    <h6>Expired Members</h6>
+                    <h2>{{ expired_members }}</h2>
+                    <i class="fas fa-user-times" style="color: #ff3b30; font-size: 1.5rem;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card apple-card-glass">
+                <div class="card-body text-center">
+                    <h6>Paid This Month</h6>
+                    <h2>{{ paid_this_month }}</h2>
+                    <i class="fas fa-calendar-check" style="color: #ff9500; font-size: 1.5rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions & System Info with glass cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-6">
+            <div class="card apple-card-glass">
+                <div class="card-body">
+                    <h5 style="font-weight: 700; color: #1c1c1e;"><i class="fas fa-rocket" style="color:#007aff;"></i> Quick Actions</h5>
+                    <div class="d-flex flex-column gap-3 mt-3">
+                        <a href="{% url 'add_member' %}" class="btn apple-btn-blue"><i class="fas fa-user-plus"></i> Add Member</a>
+                        <a href="{% url 'must_pay_list' %}" class="btn apple-btn-red"><i class="fas fa-exclamation-triangle"></i> Must Pay</a>
+                        <a href="{% url 'all_members' %}" class="btn apple-btn-green"><i class="fas fa-users"></i> All Members</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card apple-card-glass">
+                <div class="card-body">
+                    <h5 style="font-weight: 700; color: #1c1c1e;"><i class="fas fa-info-circle" style="color:#007aff;"></i> System Info</h5>
+                    <ul style="margin-top: 1rem; padding-left: 20px; color: #1c1c1e;">
+                        <li>Track member payments</li>
+                        <li>Monitor membership validity</li>
+                        <li>View payment history</li>
+                        <li>Search & filter members easily</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+<style>
+/* Glass-style Apple Cards */
+.apple-card-glass {
+    border-radius: 20px;
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.apple-card-glass:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+}
+
+/* Apple Buttons */
+.apple-btn-blue {
+    background-color: #007aff;
+    color: #fff;
+    border-radius: 14px;
+    padding: 12px;
+    font-weight: 600;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.apple-btn-blue:hover { background-color: #005bb5; }
+
+.apple-btn-red {
+    background-color: #ff3b30;
+    color: #fff;
+    border-radius: 14px;
+    padding: 12px;
+    font-weight: 600;
+}
+.apple-btn-red:hover { background-color: #c1271d; }
+
+.apple-btn-green {
+    background-color: #34c759;
+    color: #fff;
+    border-radius: 14px;
+    padding: 12px;
+    font-weight: 600;
+}
+.apple-btn-green:hover { background-color: #28a745; }
+
+/* Apple-style Table */
+.apple-table {
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    font-weight: 500;
+    width: 100%;
+}
+.apple-table th {
+    background-color: #f2f2f7;
+    color: #1c1c1e;
+    font-weight: 600;
+    padding: 15px;
+    border-radius: 12px;
+}
+.apple-table td {
+    background-color: #ffffff;
+    padding: 15px;
+    border-radius: 12px;
+}
+.apple-table tr:hover td {
+    background-color: #f0f0f5;
+}
+
+/* Apple Badges */
+.apple-badge-green {
+    background-color: #34c759;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+.apple-badge-red {
+    background-color: #ff3b30;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+</style>
+{% endblock %}

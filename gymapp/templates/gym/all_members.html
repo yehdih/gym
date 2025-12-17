@@ -1,0 +1,261 @@
+{% extends 'gym/base.html' %}
+
+{% block title %}All Members - Gym Management{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-info text-white rounded-top">
+                <div class="d-flex flex-column flex-md-row align-items-center justify-content-between">
+                    <h4 class="mb-0">
+                        <i class="fas fa-users me-2"></i>All Members
+                    </h4>
+                    {# Mobile-only count badge #}
+                    <div class="d-md-none mt-2">
+                        <span class="badge bg-light text-dark fs-6 p-2">
+                            <i class="fas fa-user me-1"></i>{{ members.count|default:"0" }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body p-3 p-md-4">  {# Different padding for mobile vs desktop #}
+                {# Search and Filter Section #}
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-md-6">
+                        <form method="get" class="mb-0">
+                            <input type="hidden" name="status" value="{{ status_filter }}">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white">
+                                    <i class="fas fa-search text-muted"></i>
+                                </span>
+                                <input type="text" 
+                                       name="search" 
+                                       class="form-control border-start-0" 
+                                       placeholder="Search by name or phone..."
+                                       value="{{ search_query }}"
+                                       aria-label="Search members">
+                                {% if search_query %}
+                                    <a href="?status={{ status_filter }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                {% endif %}
+                                <button class="btn btn-primary" type="submit">
+                                    <span class="d-none d-md-inline">Search</span>
+                                    <i class="fas fa-search d-md-none"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="col-12 col-md-6">
+                        <div class="d-flex flex-wrap gap-2 justify-content-md-end" role="group">
+                            <a href="?status=all{% if search_query %}&search={{ search_query }}{% endif %}" 
+                               class="btn btn-sm {% if status_filter == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                                All
+                            </a>
+                            <a href="?status=active{% if search_query %}&search={{ search_query }}{% endif %}" 
+                               class="btn btn-sm {% if status_filter == 'active' %}btn-success{% else %}btn-outline-success{% endif %}">
+                                Active
+                            </a>
+                            <a href="?status=expired{% if search_query %}&search={{ search_query }}{% endif %}" 
+                               class="btn btn-sm {% if status_filter == 'expired' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                                Expired
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                {% if members %}
+                    {# Mobile Stats Banner #}
+                    <div class="d-block d-md-none mb-3 p-3 bg-light rounded">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-user-check text-info me-2"></i>
+                                <strong>{{ members.count }}</strong> member(s)
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted d-block">Filter:</small>
+                                <span class="badge 
+                                    {% if status_filter == 'all' %}bg-primary
+                                    {% elif status_filter == 'active' %}bg-success
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ status_filter|title }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Desktop Table (hidden on mobile) #}
+                    <div class="d-none d-md-block">
+                        <div class="alert alert-info d-flex align-items-center">
+                            <i class="fas fa-info-circle fa-lg me-3"></i>
+                            <div>
+                                Showing <strong>{{ members.count }}</strong> member(s)
+                                {% if search_query %}matching "{{ search_query }}"{% endif %}
+                                {% if status_filter != 'all' %}with <span class="text-capitalize">{{ status_filter }}</span> status{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th scope="col">Name</th>
+                                        <th scope="col">Phone</th>
+                                        <th scope="col">Monthly Fee</th>
+                                        <th scope="col">Joined Date</th>
+                                        <th scope="col">Valid Until</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for member in members %}
+                                        <tr>
+                                            <td><strong>{{ member.full_name }}</strong></td>
+                                            <td>{{ member.phone_number }}</td>
+                                            <td>${{ member.monthly_fee }}</td>
+                                            <td>{{ member.date_joined|date:"M d, Y" }}</td>
+                                            <td>{{ member.validity_end_date|date:"M d, Y" }}</td>
+                                            <td>
+                                                {% if member.is_expired %}
+                                                    <span class="badge bg-danger rounded-pill">Expired</span>
+                                                {% else %}
+                                                    <span class="badge bg-success rounded-pill">
+                                                        Active ({{ member.days_remaining }} days)
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a href="{% url 'member_profile' member.pk %}" 
+                                                       class="btn btn-outline-primary">
+                                                        <i class="fas fa-eye me-1"></i>View
+                                                    </a>
+                                                    <a href="{% url 'delete_member' member.pk %}" 
+                                                       class="btn btn-outline-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {# Mobile Card Layout (shown only on mobile) #}
+                    <div class="d-block d-md-none">
+                        <div class="list-group list-group-flush">
+                            {% for member in members %}
+                                <div class="list-group-item p-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="mb-1 fw-bold">{{ member.full_name }}</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-phone me-1"></i>{{ member.phone_number }}
+                                            </small>
+                                        </div>
+                                        <span class="badge {% if member.is_expired %}bg-danger{% else %}bg-success{% endif %} rounded-pill">
+                                            ${{ member.monthly_fee }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Joined</small>
+                                            <strong>{{ member.date_joined|date:"M d, Y" }}</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Valid Until</small>
+                                            <strong>{{ member.validity_end_date|date:"M d, Y" }}</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            {% if member.is_expired %}
+                                                <span class="badge bg-danger">Expired</span>
+                                            {% else %}
+                                                <span class="badge bg-success">
+                                                    {{ member.days_remaining }} days left
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'member_profile' member.pk %}" 
+                                               class="btn btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'delete_member' member.pk %}" 
+                                               class="btn btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                {% else %}
+                    {# No Members State #}
+                    <div class="text-center py-5">
+                        <div class="py-5">
+                            <i class="fas fa-user-slash fa-4x text-muted mb-4"></i>
+                            <h4 class="text-muted mb-3">No Members Found</h4>
+                            <p class="text-muted mb-4">
+                                {% if search_query %}No members matching "{{ search_query }}"{% endif %}
+                                {% if status_filter != 'all' %}with {{ status_filter }} status{% endif %}.
+                            </p>
+                            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                <a href="?status=all" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Clear Filters
+                                </a>
+                                <a href="#" class="btn btn-info">
+                                    <i class="fas fa-user-plus me-2"></i>Add New Member
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    {# Custom mobile optimizations #}
+    @media (max-width: 768px) {
+        .list-group-item {
+            border-left: none;
+            border-right: none;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        .btn-group-sm > .btn {
+            padding: 0.375rem 0.75rem;
+        }
+        
+        .input-group .btn {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+    
+    {# Hover effects for better interactivity #}
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+        transition: background-color 0.2s ease;
+    }
+    
+    .btn-outline-primary:hover, .btn-outline-success:hover, .btn-outline-danger:hover {
+        transform: translateY(-1px);
+        transition: transform 0.2s ease;
+    }
+</style>
+{% endblock %}
