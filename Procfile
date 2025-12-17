@@ -1,2 +1,3 @@
-web: gunicorn gymapp.wsgi:application
+web: gunicorn tiger.wsgi:application
+
 
